@@ -108,7 +108,7 @@ next one. Source material for PROCESS.md; not a substitute for it.
   zero moles on screen (the "first decoy is met alone" requirement, confirmed at
   runtime rather than only in config), max 2 targets up at once, never more than
   1 decoy at once, and `is-won` at 107.6s with no lives lost.
-- **Citation:** the CDP session above; code in the following commit.
+- **Citation:** [`96ad39d`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Gera1t-2001/commit/96ad39d)
 - **Curated prompt:** (none — this came from looking at the render, not from a
   prompt)
 
