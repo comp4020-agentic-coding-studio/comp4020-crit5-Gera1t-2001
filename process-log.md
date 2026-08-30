@@ -129,3 +129,17 @@ next one. Source material for PROCESS.md; not a substitute for it.
   the grep's own shell and no browser, and the same script ran clean on a new
   port seconds later.
 - **Citation:** (no commit — tooling, not repo state)
+
+---
+
+## 2026-08-30 20:41 — contract documented, card replaced
+
+- **Tag:** `[routine]`
+- **What happened:** `spec/README.md` needed the week's contract table, and
+  `public/card.png` was still the template's placeholder.
+- **What I did instead of the obvious thing:** Generated the card from the
+  running game at 1200x630 rather than drawing one, so the link preview is the
+  actual opening screen and cannot drift from what ships.
+- **How I knew it was right:** `pnpm check` green; card verified as
+  1200x630 PNG and viewed before installing.
+- **Citation:** [`5b8b369`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Gera1t-2001/commit/5b8b369)

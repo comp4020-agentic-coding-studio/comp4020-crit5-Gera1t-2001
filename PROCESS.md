@@ -1,70 +1,49 @@
 # Process overview
 
-<!-- TEMPLATE: this file is a shape to fill in, not a form. Replace everything
-     in it with your own overview, and delete this comment — `pnpm
-     check:evidence` will remind you if it's still here. -->
-
-A reading-guide to how the work came together --- a map to your process, not an
-essay about it. Markers read this file and follow its citations; they don't
-trawl the repo for evidence you didn't point at, so if a moment mattered, cite
-it.
-
-This file is the shape; the course site's
-[assessment page](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#what-you-submit)
-is the requirement, and its
-[word counts](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#word-counts)
-cover every deliverable.
-
 ## What I built
 
-One paragraph: the thing, and the idea behind it.
+**Burrow**: whack-a-mole in nine holes, with no words anywhere. A mole that
+retreats unhit costs a life; striking a decoy — same colour and size, spiked
+rather than domed — costs one too. Those pressures pull against each other. It
+opens on one mole already up, which is both the invitation and the start button,
+and the decoy rule is taught only by losing exactly one life to it.
+
+![The opening screen: one mole, eight inert holes, five lives, no words](docs/opening.png)
 
 ## The moments that mattered
 
-Three or four for an assignment; fewer is fine for a weekly prototype. Keep the
-list short so each moment has room to do all four jobs:
+### 1. I had an agent refute my own difficulty design
 
-1. **what happened** --- the problem, or the thing that went wrong
-2. **what you did instead of the obvious thing** --- the call you made, and why
-   it beat the obvious one
-3. **how you knew it was right** --- the check you ran, the viewport you looked
-   at, what you read before accepting the diff
-4. **the citation** --- a commit or commit range, a `CLAUDE.md` change, a check
-   that went from red to green, a prompt paired with the commit it produced
+I had planned for late waves to get harder by raising the decoy ratio. Rather
+than build on that, I had an independent agent attack the arithmetic. Hazard
+*falls* monotonically in the ratio — ignoring a decoy is free, so more decoys
+means less work — and the distinct silhouette I chose for colourblind safety is
+exactly what guarantees it. My two decisions were mutually exclusive. It also
+caught that my widened onset gap had left zero overlap at wave 6, disabling the
+concurrency lever too. Both now sit in the suite as assertions.
 
-Jobs 2 and 3 are the ones the repo can't tell a reader on its own, so they're
-where the marks are. The strongest moments are the ones where a correction
-landed in the **harness** --- the standards and checks your work has to satisfy
---- rather than in a retry: a rule added to `CLAUDE.md`, a check wired up, an
-attempt thrown away. Retrying until it passes is the routine case, and changing
-what the work runs against is the skilled one.
+> Be adversarial about the arithmetic — I specifically want you to refute my claim.
 
-Cite each moment as a link whose text is the commit hash or range and whose
-target is this repo's commit or compare URL, so a reader clicks straight to the
-evidence:
+[`b90650c`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Gera1t-2001/commit/b90650c)
 
-- one commit: [`a1b2c3d`](https://github.com/YOUR-ORG/YOUR-REPO/commit/a1b2c3d)
-- a range:
-  [`a1b2c3d...e4f5a6b`](https://github.com/YOUR-ORG/YOUR-REPO/compare/a1b2c3d...e4f5a6b)
+### 2. The focused test passed first time, so I broke it
 
-To pair a prompt with the commit it produced, quote the prompt (curated, not a
-full transcript) next to the citation:
+Passing on the first attempt is the shape of a false green. My `CLAUDE.md` rule
+is that a green needs proof the sensor answers a *deliberate* change, so I broke
+the decoy rule both ways — dropped the idempotency filter, then charged two
+lives. Each reddened exactly the assertions naming that failure and no others,
+which is what shows the tests are focused rather than coupled.
 
-> the prompt, verbatim
+[`10a8433`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Gera1t-2001/commit/10a8433)
 
-Screenshots are welcome where one carries the verification better than a
-sentence does. Commit the file to this repo and link it with a **relative**
-path, which is what makes it render on GitHub: `![alt text](docs/before.png)`.
-Images don't count towards the word count and don't replace the citation.
+### 3. Forty-one green tests over a visibly broken interface
 
-## Before you ship
+`pnpm check` was fully green while every target rendered half a body-width right
+of its own hole. Three rules were writing the same box; rather than find which
+won, I removed the interaction. Then I verified by reading
+`getBoundingClientRect` over CDP instead of by looking — 95×95 CSS px at
+390×844, against a 60px floor.
 
-`pnpm check:evidence` verifies your citations resolve to real commits, that a
-reflection entry the marker reads is in `reflections/`, and that your
-`CLAUDE.md` is there --- before a marker ever opens the file. It checks that
-your map is traceable, not that it is good: the marker judges whether your
-small, deliberately chosen set of moments shows real judgement and reflection. A
-green check is not a substitute for that curation.
+![Striking a decoy: the burst lands on the hole that caused it, and one pip goes dark](docs/decoy-struck.png)
 
-Images aren't checked: unlike a citation whose SHA doesn't resolve, a broken
-image is visible the moment this file is rendered on GitHub.
+[`96ad39d`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Gera1t-2001/commit/96ad39d)
