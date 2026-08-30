@@ -166,3 +166,26 @@ next one. Source material for PROCESS.md; not a substitute for it.
   excluded (299). `pnpm check:evidence` passes every citation.
 - **Citation:** [`7bdf4fd`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Gera1t-2001/commit/7bdf4fd)
 - **Curated prompt:** "写一下 process.md"
+
+---
+
+## 2026-08-30 21:02 — reflection edited, not written
+
+- **Tag:** `[judgement]`
+- **What happened:** The reflection arrived as my own draft, pasted with a hard
+  line break and a blank line between every line — which Markdown renders as one
+  paragraph per line, so it would have arrived at the marker as a column of
+  fragments on GitHub.
+- **What I did instead of the obvious thing:** Edited rather than rewrote. The
+  agent had earlier declined to draft this file at all, on the grounds that it
+  answers two personal prompts and is assessed as mine, and that a stub would
+  make `check:evidence` green while saying nothing — the false-green pattern the
+  harness warns about. So the changes were confined to three kinds: reflowing
+  paragraphs, cutting 357 words to 319 by compressing the restatement of the
+  ratio arithmetic (already carried by `PROCESS.md` and `spec/README.md`), and
+  minor tightening. No claim, conclusion or judgement altered.
+- **How I knew it was right:** Word count measured with headings excluded, and
+  held deliberately at 319 rather than cut to the 300 guideline — the course
+  states no word-limit penalty, and the remaining 6% was not worth spending more
+  of my own sentences on. `pnpm check:evidence` passes both gates.
+- **Citation:** [`dcb90da`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Gera1t-2001/commit/dcb90da)
