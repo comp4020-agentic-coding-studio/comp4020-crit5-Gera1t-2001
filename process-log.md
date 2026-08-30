@@ -60,3 +60,72 @@ next one. Source material for PROCESS.md; not a substitute for it.
 - **Curated prompt:** "Is the claim correct? If it is wrong, say exactly where.
   Be adversarial about the arithmetic — I specifically want you to try to
   refute my claim."
+
+---
+
+## 2026-08-30 20:26 — reducer implemented, and the green checked for falseness
+
+- **Tag:** `[harness]`
+- **What happened:** `spec/crit5.test.ts` went from 16 failing to 24 passing on
+  the first implementation attempt. Every assertion I had written to protect the
+  teaching design passed at once, which is the shape a false green takes.
+- **What I did instead of the obvious thing:** Rather than accept it, I applied
+  CLAUDE.md's rule that a green needs a demonstration the sensor responds to a
+  *deliberate change* — a known-good case is not enough, because a broken sensor
+  passes that too. Broke the rule in each direction separately: dropped the
+  `!struck` filter from the strike lookup, and separately charged two lives per
+  decoy instead of one.
+- **How I knew it was right:** Each break turned red exactly the assertions that
+  name that failure and no others — the idempotency break took the two repeat-
+  strike tests, the double-charge took the "costs exactly one life" tests. A
+  suite that went red on everything, or on the wrong things, would have meant
+  the tests were coupled rather than focused. Both edits reverted and re-checked
+  green.
+- **Citation:** [`10a8433`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Gera1t-2001/commit/10a8433)
+
+---
+
+## 2026-08-30 20:38 — the interface, and three things only a render showed
+
+- **Tag:** `[judgement]`
+- **What happened:** `pnpm check` was green with 41 passing tests against an
+  interface that was visibly broken. Screenshotting the built page at both
+  marking viewports showed every target rendered half a body-width to the right
+  of its own hole, and the lives row aligned to the board's left edge instead of
+  its centre. The hole's `::after` halo, positioned with `inset`, stayed put and
+  showed exactly how far off the target was.
+- **What I did instead of the obvious thing:** The centring used
+  `left: 50%` with the independent `translate: -50% 0` property, alongside a
+  `transform` used for the rise and a keyframe animation also writing
+  `transform`. Rather than debug which of the three was winning, I removed the
+  interaction: centring is now `left: 16%; right: 16%`, and `transform` is left
+  to do exactly one job. Also raised the cell size cap after seeing the board sit
+  in the middle of a mostly empty 1920x1080 viewport — the C1 failure mode
+  recorded in CLAUDE.md.
+- **How I knew it was right:** Not by looking. Drove the built page over CDP and
+  read `getBoundingClientRect` directly: 95x95 CSS px at 390x844, against a 60px
+  floor. Then auto-played a full run in the browser — first decoy at 14.0s with
+  zero moles on screen (the "first decoy is met alone" requirement, confirmed at
+  runtime rather than only in config), max 2 targets up at once, never more than
+  1 decoy at once, and `is-won` at 107.6s with no lives lost.
+- **Citation:** the CDP session above; code in the following commit.
+- **Curated prompt:** (none — this came from looking at the render, not from a
+  prompt)
+
+---
+
+## 2026-08-30 20:32 — the harness killed itself, and it looked like a page bug
+
+- **Tag:** `[routine]`
+- **What happened:** Re-running the CDP driver at the phone viewport exited 144
+  with no output, which read as the driver failing against the page.
+- **What I did instead of the obvious thing:** Treated the red as a claim about
+  the harness first, per CLAUDE.md. It was: the command began
+  `pkill -f "remote-debugging-port=9333"`, and that pattern matches the calling
+  shell's own command line, because the string appears in it. The script killed
+  itself before reaching the page. Fixed by using a fresh port per run instead
+  of pattern-killing.
+- **How I knew it was right:** `pgrep -af "remote-debugging-port"` returned only
+  the grep's own shell and no browser, and the same script ran clean on a new
+  port seconds later.
+- **Citation:** (no commit — tooling, not repo state)

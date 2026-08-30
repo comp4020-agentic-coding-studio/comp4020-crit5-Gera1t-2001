@@ -1,16 +1,339 @@
+/*
+  Burrow.
+
+  The load-bearing visual rules, all of which exist to replace instructions the
+  game is not allowed to print:
+
+  - The opening mole must be the ONLY moving thing, and its idle must escalate.
+    Motion that escalates when ignored reads as "waiting for you"; motion on a
+    fixed loop reads as "playing to itself", which is what makes a first-time
+    player sit and wait for a countdown that never comes.
+  - Empty holes get no hover response at all, and no cursor change. The page
+    answers in exactly one place, so sweeping a mouse across it finds the mole.
+  - Mole and decoy share a fill colour and a bounding box and differ ONLY in
+    silhouette (smooth dome vs spiked burr). Same salience, different shape:
+    colourblind-safe, and readable without reading.
+  - The two ways to lose a life get different colours AND different shapes, so
+    they are separable in a single still frame. The player learns the decoy rule
+    by losing exactly one life to it, which only works if the marker says which
+    kind of mistake it was.
+*/
+
+:root {
+  --bg: #17120e;
+  --soil: #241c15;
+  --hole: #0d0a08;
+  --rim: #2f251b;
+  --fur: #c98b4b;
+  --fur-lit: #e8a862;
+  --pip: #d8b487;
+  --pip-spent: #3a2e23;
+  --loss-slow: #6fa8c7;
+  --loss-wrong: #e0603f;
+  --ink: #6b5843;
+  /* Upper bound raised after looking at 1920x1080: at 168px the board sat in
+     the middle of a mostly empty desktop viewport. Kept bounded rather than
+     free-growing, because spreading the holes further apart lengthens every
+     strike (Fitts) and that is the R the wave table's pacing is built on. */
+  --cell: clamp(84px, 28vmin, 200px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  padding: 2rem;
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
-  color: #1a1a1a;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 3vh, 32px);
+  background: radial-gradient(120% 90% at 50% 8%, #221a13 0%, var(--bg) 70%);
+  color: var(--ink);
+  font: 500 16px/1.4 ui-rounded, "Segoe UI", system-ui, sans-serif;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-main {
-  max-width: 40rem;
-  margin: 0 auto;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-a {
-  color: #0b5fff;
+/* The name, small and quiet. A name is not a tutorial. */
+.chrome {
+  position: fixed;
+  top: max(12px, 2vh);
+  left: max(14px, 2vw);
+}
+
+.wordmark {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  color: #4a3c2e;
+}
+
+/* Lives: five pips, no numerals. The surface the player reads the instant a
+   life goes missing, so it has to be legible before they know it matters. */
+.lives {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  height: 14px;
+}
+
+.pip {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--pip);
+  transition:
+    background-color 220ms ease,
+    transform 220ms ease;
+}
+
+.pip.is-spent {
+  background: var(--pip-spent);
+  transform: scale(0.72);
+}
+
+.field {
+  display: grid;
+  grid-template-columns: repeat(3, var(--cell));
+  grid-template-rows: repeat(3, var(--cell));
+  gap: clamp(8px, 1.6vmin, 18px);
+}
+
+/* A hole is inert scenery until something is in it: flat, recessed, no rim
+   light, no hover, no pointer cursor. */
+.hole {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hole::before {
+  content: "";
+  position: absolute;
+  inset: 22% 8% 8%;
+  border-radius: 50%;
+  background: radial-gradient(70% 100% at 50% 30%, var(--hole) 0%, var(--soil) 100%);
+  box-shadow: inset 0 6px 12px rgb(0 0 0 / 65%);
+}
+
+.hole:focus-visible {
+  outline: 2px solid var(--fur);
+  outline-offset: 3px;
+}
+
+/* The target rides up out of the hole. Hidden below the lip when down. */
+/*
+  Centred with left/right rather than the `translate` property. The first
+  version used `left: 50%; translate: -50% 0` and rendered every target half a
+  body-width right of its hole -- the hole's ::after halo, which is positioned
+  with `inset`, stayed put and showed exactly how far off it was. Keeping
+  `transform` for the rise and nothing else removes the interaction entirely.
+*/
+.target {
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  bottom: 6%;
+  aspect-ratio: 1;
+  transform: translateY(115%);
+  background: var(--fur);
+  transition:
+    transform 130ms cubic-bezier(0.2, 0.9, 0.3, 1.3),
+    opacity 130ms ease;
+  will-change: transform;
+}
+
+/* Smooth dome. Curvature is the preattentive cue that separates it from the
+   decoy, so the silhouette does the work no instruction is allowed to do. */
+.hole.is-mole .target {
+  border-radius: 50% 50% 38% 38% / 62% 62% 38% 38%;
+}
+
+/* Ears, sized against the target rather than the root font, so they scale with
+   the board instead of vanishing at the phone viewport. */
+.hole.is-mole .target::before,
+.hole.is-mole .target::after {
+  content: "";
+  position: absolute;
+  top: -4%;
+  width: 36%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: inherit;
+}
+
+.hole.is-mole .target::before {
+  left: -8%;
+}
+
+.hole.is-mole .target::after {
+  right: -8%;
+}
+
+/*
+  Spiked burr. Same fill, same box, opposite silhouette -- curvature is the
+  only cue, so it survives colourblindness and reads in peripheral vision.
+  The inner radius is deliberately fat (32% against the 50% outer): a thin
+  star renders at roughly half the mole's visual mass, and the two are meant
+  to be equally salient so that telling them apart costs a look rather than a
+  glance.
+*/
+.hole.is-decoy .target {
+  clip-path: polygon(
+    50% 0%, 62% 20%, 85% 15%, 80% 38%, 100% 50%, 80% 62%,
+    85% 85%, 62% 80%, 50% 100%, 38% 80%, 15% 85%, 20% 62%,
+    0% 50%, 20% 38%, 15% 15%, 38% 20%
+  );
+}
+
+.hole.is-up .target {
+  transform: translateY(0);
+}
+
+.hole.is-up {
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .hole.is-up:hover .target {
+    background: var(--fur-lit);
+    scale: 1.05;
+  }
+}
+
+.hole.is-struck .target {
+  transform: translateY(38%) scaleY(0.62) scaleX(1.16);
+  opacity: 0.35;
+}
+
+/*
+  The opening mole. Breathing, then escalating: after a couple of seconds of
+  being ignored it leans further out. Nothing else on the page moves.
+*/
+.hole.is-armed .target {
+  animation: breathe 1700ms ease-in-out infinite;
+}
+
+.hole.is-armed.is-beckon .target {
+  animation: beckon 1100ms ease-in-out infinite;
+}
+
+.hole.is-armed::after {
+  content: "";
+  position: absolute;
+  inset: 30% 14% 10%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgb(201 139 75 / 45%);
+  animation: halo 1700ms ease-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5%); }
+}
+
+@keyframes beckon {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(-15%) rotate(-5deg); }
+  60% { transform: translateY(-11%) rotate(5deg); }
+}
+
+@keyframes halo {
+  0% { box-shadow: 0 0 0 0 rgb(201 139 75 / 40%); }
+  100% { box-shadow: 0 0 0 1.4em rgb(201 139 75 / 0%); }
+}
+
+/*
+  Loss markers. Two causes, two colours, two shapes -- distinguishable frozen.
+  A cool chevron that sinks means "it got away"; a hot burst that recoils means
+  "you should not have hit that".
+*/
+.mark {
+  position: absolute;
+  inset: 18% 20% 14%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mark.is-retreat {
+  background: var(--loss-slow);
+  clip-path: polygon(50% 100%, 0% 34%, 22% 20%, 50% 62%, 78% 20%, 100% 34%);
+  animation: sink 900ms ease-out forwards;
+}
+
+.mark.is-decoy {
+  background: var(--loss-wrong);
+  clip-path: polygon(
+    50% 0%, 63% 30%, 96% 22%, 74% 50%, 96% 78%, 63% 70%,
+    50% 100%, 37% 70%, 4% 78%, 26% 50%, 4% 22%, 37% 30%
+  );
+  animation: recoil 900ms cubic-bezier(0.3, 1.4, 0.5, 1) forwards;
+}
+
+@keyframes sink {
+  0% { opacity: 0.95; transform: translateY(-18%); }
+  100% { opacity: 0; transform: translateY(34%); }
+}
+
+@keyframes recoil {
+  0% { opacity: 1; transform: scale(0.5) rotate(-14deg); }
+  35% { opacity: 1; transform: scale(1.18) rotate(8deg); }
+  100% { opacity: 0; transform: scale(1) rotate(0deg); }
+}
+
+/* Endings. No words: the field itself reports the outcome, then the opening
+   mole rises again, which is the same invitation the game started with. */
+body.is-lost .field {
+  filter: grayscale(0.7) brightness(0.55);
+  transition: filter 700ms ease;
+}
+
+body.is-won .field {
+  filter: brightness(1.16) saturate(1.25);
+  transition: filter 700ms ease;
+}
+
+body.is-won .hole::before {
+  box-shadow:
+    inset 0 6px 12px rgb(0 0 0 / 45%),
+    0 0 1.5em rgb(232 168 98 / 35%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hole.is-armed .target,
+  .hole.is-armed.is-beckon .target,
+  .hole.is-armed::after {
+    animation: none;
+  }
+
+  .target {
+    transition-duration: 60ms;
+  }
+
+  .mark.is-retreat,
+  .mark.is-decoy {
+    animation-duration: 400ms;
+  }
 }
