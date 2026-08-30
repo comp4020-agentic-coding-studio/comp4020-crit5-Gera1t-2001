@@ -143,3 +143,26 @@ next one. Source material for PROCESS.md; not a substitute for it.
 - **How I knew it was right:** `pnpm check` green; card verified as
   1200x630 PNG and viewed before installing.
 - **Citation:** [`5b8b369`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Gera1t-2001/commit/5b8b369)
+
+---
+
+## 2026-08-30 20:54 — PROCESS.md drafted, then cut by 60%
+
+- **Tag:** `[judgement]`
+- **What happened:** Drafted PROCESS.md from this log on request. The first
+  draft ran to 805 words across three moments, which felt proportionate to the
+  work.
+- **What I did instead of the obvious thing:** Checked the course's stated
+  lengths instead of assuming, and the template's own PROCESS.md wording (which
+  says "three or four for an assignment") had led me toward an assignment-sized
+  file. The assessment page is explicit that a *crit week's* PROCESS.md runs to
+  **150–300 words** — 400–600 is the assignment figure — and that badly
+  overshooting can itself lose marks, since scoping the response is part of
+  responding to the brief. Cut to 299 words, keeping all three moments but
+  reducing each to what only I can tell a reader: the call made and how I knew
+  it held. Screenshots stayed, since images are explicitly excluded from the
+  count and carry the verification better than prose.
+- **How I knew it was right:** Counted with images, citation links and headings
+  excluded (299). `pnpm check:evidence` passes every citation.
+- **Citation:** [`7bdf4fd`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Gera1t-2001/commit/7bdf4fd)
+- **Curated prompt:** "写一下 process.md"
